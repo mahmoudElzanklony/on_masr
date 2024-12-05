@@ -72,6 +72,8 @@ class SyncFoldersAndFilesToWasabi extends Command
     private function uploadToWasabi(string $fileUrl, string $path)
     {
         try {
+            $path = str_replace('//', '/', $path);
+
             // Stream the file to avoid memory issues with large files
             $fileStream = Http::withOptions(['stream' => true])->get($fileUrl)->getBody();
 
