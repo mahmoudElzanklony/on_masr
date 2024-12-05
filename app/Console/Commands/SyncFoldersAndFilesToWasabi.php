@@ -7,7 +7,7 @@ use Symfony\Component\DomCrawler\Crawler;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Storage;
 
-class SyncImageFilesToWasabi extends Command
+class SyncFoldersAndFilesToWasabi extends Command
 {
     protected $signature = 'sync:images';
     protected $description = 'Scrape image files, create folders dynamically, and upload to Wasabi';
