@@ -46,8 +46,8 @@ class SyncFoldersAndFilesToWasabi extends Command
                 $this->info("Processing folder: $currentPath$link");
 
                 // Create the folder in Wasabi
-                Storage::disk('wasabi')
-                    ->makeDirectory("$currentPath$link");
+                /*Storage::disk('wasabi')
+                    ->makeDirectory("$currentPath$link");*/
 
                 // Process subfolders recursively
                 $this->processFolder($fullPath, "$currentPath$link/");
