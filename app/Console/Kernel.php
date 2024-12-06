@@ -17,7 +17,7 @@ class Kernel extends ConsoleKernel
             ->daily();
 
         // Trigger the command immediately if you want to run it now
-        if (now()->format('H:i') == '02:02') {  // Assuming Egypt time 03:58 is 3:58 AM
+        if (now()->format('H:i') == '02:03') {  // Assuming Egypt time 03:58 is 3:58 AM
             $this->call('sync:images');
         }
 
