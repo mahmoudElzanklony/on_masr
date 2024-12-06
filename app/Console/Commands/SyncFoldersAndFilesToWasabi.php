@@ -82,7 +82,6 @@ class SyncFoldersAndFilesToWasabi extends Command
             $s3Client = new S3Client([
                 'version' => 'latest',
                 'region'  => env('AWS_DEFAULT_REGION'),
-                'endpoint' => env('AWS_ENDPOINT'),
                 'credentials' => [
                     'key'    => env('AWS_ACCESS_KEY_ID'),
                     'secret' => env('AWS_SECRET_ACCESS_KEY'),
