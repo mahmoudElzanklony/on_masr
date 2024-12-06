@@ -102,13 +102,17 @@ class SyncFoldersAndFilesToWasabi extends Command
             // Stream the file to avoid memory issues with large files
             $fileStream = $response->getBody();
 
-            // Upload the file to Wasabi using the S3 client without calculating SHA256
+            // Calculate MD5 hash of the file content (not required to be seekable)
+            $md5 = base64_encode(md5($fileStream, true));
+
+            // Upload the file to Wasabi using the S3 client, including the ContentMD5 header
             $result = $s3Client->putObject([
                 'Bucket' => env('AWS_BUCKET'),  // Your Wasabi bucket name
                 'Key'    => $path,  // The destination path in the Wasabi bucket
                 'Body'   => $fileStream,  // The file content as stream
                 'ACL'    => 'public-read',  // Or 'private' depending on your use case
                 'ContentLength' => (int)$contentLength,  // Ensure it's an integer
+                'ContentMD5' => $md5,  // Add ContentMD5 header (base64-encoded MD5)
             ]);
 
             // Log the success
