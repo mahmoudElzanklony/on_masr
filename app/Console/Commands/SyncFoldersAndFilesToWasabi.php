@@ -75,20 +75,18 @@ class SyncFoldersAndFilesToWasabi extends Command
             $path = str_replace('//', '/', $path); // Ensure the path is formatted correctly
 
             // Stream the file to avoid memory issues with large files
-            $fileStream = Http::withOptions(['stream' => true])
-                ->get($fileUrl)->getBody();
+            $fileStream = Http::withOptions(['stream' => true])->get($fileUrl)->getBody();
 
-            // Temporarily store the file locally for the upload process
-            $tempFilePath = storage_path('app');
+            // Generate a unique filename to prevent overwriting
+            $tempFilePath = storage_path('app/tempfile_' . uniqid() . '.tmp');
 
             // Write the stream to a temporary file
             file_put_contents($tempFilePath, $fileStream);
 
             // Upload the file to Wasabi
-            Storage::disk('wasabi')
-                ->putFileAs('', new \Illuminate\Http\File($tempFilePath), $path);
+            Storage::disk('wasabi')->putFileAs('', new \Illuminate\Http\File($tempFilePath), $path);
 
-            // Delete the temporary file
+            // Delete the temporary file after upload
             unlink($tempFilePath);
 
             $this->info("Uploaded to Wasabi: $path");
@@ -96,7 +94,6 @@ class SyncFoldersAndFilesToWasabi extends Command
             $this->error("Failed to upload: $fileUrl. Error: {$e->getMessage()}");
         }
     }
-
 
 
 }
