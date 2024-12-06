@@ -23,7 +23,7 @@ class SyncFoldersAndFilesToWasabi extends Command
         $this->info("Fetching image files from: $baseUrl");
 
         // Start the folder processing from the root
-        $this->processFolder($baseUrl, 'tenanton-misr/app/uploads/2024/');
+        $this->processFolder($baseUrl, 'tenanton-misr/app/uploads/3/5');
 
         $this->info('All images have been successfully synced to Wasabi!');
     }
@@ -46,7 +46,7 @@ class SyncFoldersAndFilesToWasabi extends Command
             $fullPath = rtrim($url, '/') . '/' . $link;
 
             if ($this->isFolder($link)) {
-                $this->info("Processing folder: $currentPath$link");
+                $this->info("Processing folder: $currentPath.'01-'.$link.'-2024'");
 
                 // Create the folder in Wasabi
                 /*Storage::disk('wasabi')
@@ -90,7 +90,8 @@ class SyncFoldersAndFilesToWasabi extends Command
             ]);
 
             // Download the file content as a seekable stream (write to a temporary file)
-            $response = Http::withOptions(['stream' => true])->get($fileUrl);
+            $response = Http::withOptions(['stream' => true])
+                ->get($fileUrl);
             $fileContent = $response->getBody();
 
             // Create a temporary file to hold the content and make it seekable
