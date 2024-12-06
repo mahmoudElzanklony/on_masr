@@ -28,6 +28,34 @@ class SyncFoldersAndFilesToWasabi extends Command
         $this->info('All images have been successfully synced to Wasabi!');
     }
 
+    function processUrl(string $url): string
+    {
+        // Step 1: Replace double slashes (//) with a single slash (/)
+        $url = str_replace('//', '/', $url);
+
+        // Step 2: Extract the last part of the URL (the folder name, e.g., '01', '02')
+        $pathParts = explode('/', rtrim($url, '/')); // Split the URL into an array by slashes
+        $lastPart = end($pathParts);  // Get the last part of the URL (e.g., '01', '02')
+
+        // Step 3: Check if the last part is numeric (e.g., '01', '02', etc.)
+        if (preg_match('/^\d{2}$/', $lastPart)) {
+            // If it's numeric, modify the last part to include the date (e.g., '01' -> '01-01-2024')
+            $currentMonth = $lastPart;  // Use the folder name as the month
+            $currentYear = date('Y');   // Get the current year (e.g., '2024')
+
+            // Update the last part to be in the format '01-01-2024'
+            $newLastPart = $lastPart . '-' . $currentMonth . '-' . $currentYear;
+
+            // Step 4: Replace the last part with the new format
+            $pathParts[count($pathParts) - 1] = $newLastPart;
+
+            // Step 5: Rebuild the URL with the modified last part
+            $url = implode('/', $pathParts);
+        }
+
+        return $url;
+    }
+
     private function processFolder(string $url, string $currentPath)
     {
         $html = Http::get($url)->body();
@@ -56,7 +84,7 @@ class SyncFoldersAndFilesToWasabi extends Command
                 // Process subfolders recursively
                 $this->processFolder($fullPath, "$currentPath$link/");
             } elseif ($this->isImage($link)) {
-                $link = '01-'.$link.'-2024';
+
                 $this->info("current link: $currentPath");
                 $this->info("Downloading image: $currentPath$link");
                 $this->uploadToWasabi($fullPath, "$currentPath$link");
