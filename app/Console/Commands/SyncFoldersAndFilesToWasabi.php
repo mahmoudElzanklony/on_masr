@@ -102,11 +102,11 @@ class SyncFoldersAndFilesToWasabi extends Command
             // Stream the file to avoid memory issues with large files
             $fileStream = $response->getBody();
 
-            // Upload the file to Wasabi using the S3 client
+            // Upload the file to Wasabi using the S3 client without calculating SHA256
             $result = $s3Client->putObject([
                 'Bucket' => env('AWS_BUCKET'),  // Your Wasabi bucket name
                 'Key'    => $path,  // The destination path in the Wasabi bucket
-                'Body'   => $fileStream,  // The file content
+                'Body'   => $fileStream,  // The file content as stream
                 'ACL'    => 'public-read',  // Or 'private' depending on your use case
                 'ContentLength' => (int)$contentLength,  // Ensure it's an integer
             ]);
