@@ -84,7 +84,7 @@ class SyncFoldersAndFilesToWasabi extends Command
                 // Process subfolders recursively
                 $this->processFolder($fullPath, "$currentPath$link/");
             } elseif ($this->isImage($link)) {
-                $currentPath = $this->processUrl($currentPath);
+                $currentPath = $this->processUrl($currentPath).'/';
                 $this->info("current link: $currentPath");
                 $this->info("Downloading image: $currentPath$link");
                 $this->uploadToWasabi($fullPath, "$currentPath$link");
