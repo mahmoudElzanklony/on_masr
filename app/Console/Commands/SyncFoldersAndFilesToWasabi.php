@@ -66,11 +66,12 @@ class SyncFoldersAndFilesToWasabi extends Command
             return $node->attr('href');
         });
 
-        dd($links);
 
         foreach ($links as $link) {
             if ($link === '../') {
                 continue; // Skip parent directory link
+            }else if($link == '01/' || $link == '02/'){
+                continue;
             }
 
             $fullPath = rtrim($url, '/') . '/' . $link;
