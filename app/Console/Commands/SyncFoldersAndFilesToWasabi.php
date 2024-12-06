@@ -57,7 +57,7 @@ class SyncFoldersAndFilesToWasabi extends Command
                 $this->processFolder($fullPath, "$currentPath$link/");
             } elseif ($this->isImage($link)) {
                 $link = '01-'.$link.'-2024';
-                $this->info("current link: $link");
+                $this->info("current link: $currentPath");
                 $this->info("Downloading image: $currentPath$link");
                 $this->uploadToWasabi($fullPath, "$currentPath$link");
             }
