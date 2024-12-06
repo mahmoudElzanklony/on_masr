@@ -47,6 +47,7 @@ class SyncFoldersAndFilesToWasabi extends Command
 
             if ($this->isFolder($link)) {
                 $link = '01-'.$link.'-2024';
+                $this->info("current link: $link");
                 $this->info("Processing folder: $currentPath$link");
 
                 // Create the folder in Wasabi
