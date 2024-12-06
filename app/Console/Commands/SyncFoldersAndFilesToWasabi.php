@@ -46,8 +46,7 @@ class SyncFoldersAndFilesToWasabi extends Command
             $fullPath = rtrim($url, '/') . '/' . $link;
 
             if ($this->isFolder($link)) {
-                $link = '01-'.$link.'-2024';
-                $this->info("current link: $link");
+
                 $this->info("Processing folder: $currentPath$link");
 
                 // Create the folder in Wasabi
@@ -57,6 +56,8 @@ class SyncFoldersAndFilesToWasabi extends Command
                 // Process subfolders recursively
                 $this->processFolder($fullPath, "$currentPath$link/");
             } elseif ($this->isImage($link)) {
+                $link = '01-'.$link.'-2024';
+                $this->info("current link: $link");
                 $this->info("Downloading image: $currentPath$link");
                 $this->uploadToWasabi($fullPath, "$currentPath$link");
             }
