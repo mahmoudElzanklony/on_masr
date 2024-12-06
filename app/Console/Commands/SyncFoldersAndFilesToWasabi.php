@@ -23,7 +23,7 @@ class SyncFoldersAndFilesToWasabi extends Command
         $this->info("Fetching image files from: $baseUrl");
 
         // Start the folder processing from the root
-        $this->processFolder($baseUrl, 'tenanton-misr/app/uploads/3/5');
+        $this->processFolder($baseUrl, 'tenanton-misr/app/uploads/3/5/');
 
         $this->info('All images have been successfully synced to Wasabi!');
     }
