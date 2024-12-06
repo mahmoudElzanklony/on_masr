@@ -14,7 +14,7 @@ class Kernel extends ConsoleKernel
     {
         // $schedule->command('inspire')->hourly();
         $schedule->command('sync:images')
-            ->dailyAt(now()->format('H:i'));
+            ->daily();
 
     }
 
