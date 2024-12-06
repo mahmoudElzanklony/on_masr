@@ -70,7 +70,7 @@ class SyncFoldersAndFilesToWasabi extends Command
         foreach ($links as $link) {
             if ($link === '../') {
                 continue; // Skip parent directory link
-            }else if($link == '01/' || $link == '02/'){
+            }else if($link == '01/' || $link == '02/' || $link == '03/'){
                 continue;
             }
 
@@ -90,7 +90,11 @@ class SyncFoldersAndFilesToWasabi extends Command
                 $currentPath = $this->processUrl($currentPath).'/';
                 $this->info("current link: $currentPath");
                 $this->info("Downloading image: $currentPath$link");
-                $this->uploadToWasabi($fullPath, "$currentPath$link");
+                try {
+                    $this->uploadToWasabi($fullPath, "$currentPath$link");
+                }catch (Exception $exception){
+                    $this->info('error : '.$exception->getMessage());
+                }
             }
         }
     }
