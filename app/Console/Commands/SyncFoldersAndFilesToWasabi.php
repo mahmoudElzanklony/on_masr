@@ -79,7 +79,7 @@ class SyncFoldersAndFilesToWasabi extends Command
                 ->get($fileUrl)->getBody();
 
             // Temporarily store the file locally for the upload process
-            $tempFilePath = storage_path('app/sync');
+            $tempFilePath = storage_path('app');
 
             // Write the stream to a temporary file
             file_put_contents($tempFilePath, $fileStream);
