@@ -77,6 +77,7 @@ class SyncFoldersAndFilesToWasabi extends Command
     {
         try {
             $path = str_replace('//', '/', $path);
+
             // Initialize the S3Client with Wasabi configuration
             $s3Client = new S3Client([
                 'version' => 'latest',
@@ -88,19 +89,26 @@ class SyncFoldersAndFilesToWasabi extends Command
                 ],
             ]);
 
-            // Stream the file to avoid memory issues with large files
-            $fileStream = Http::withOptions(['stream' => true])->get($fileUrl)->getBody();
+            // Perform a GET request to get the file content and headers
+            $response = Http::withOptions(['stream' => true])->get($fileUrl);
 
-            // Get the file content length (size)
-            $contentLength = $fileStream->getSize();
+            // Check if the 'Content-Length' header is present in the response
+            $contentLength = $response->header('Content-Length');
+
+            if (!$contentLength) {
+                throw new \Exception('Content-Length header is missing');
+            }
+
+            // Stream the file to avoid memory issues with large files
+            $fileStream = $response->getBody();
 
             // Upload the file to Wasabi using the S3 client
             $result = $s3Client->putObject([
-                'Bucket' => env('AWS_BUCKET_NAME'),  // Your Wasabi bucket name
+                'Bucket' => env('AWS_BUCKET'),  // Your Wasabi bucket name
                 'Key'    => $path,  // The destination path in the Wasabi bucket
                 'Body'   => $fileStream,  // The file content
                 'ACL'    => 'public-read',  // Or 'private' depending on your use case
-                'ContentLength' => $contentLength,  // Add the Content-Length header
+                'ContentLength' => (int)$contentLength,  // Ensure it's an integer
             ]);
 
             // Log the success
@@ -109,8 +117,10 @@ class SyncFoldersAndFilesToWasabi extends Command
         } catch (AwsException $e) {
             // Catch errors related to AWS SDK
             $this->error("Failed to upload: $fileUrl. Error: {$e->getMessage()}");
+        } catch (\Exception $e) {
+            // Catch other errors
+            $this->error("Error: {$e->getMessage()}");
         }
     }
-
 
 }
