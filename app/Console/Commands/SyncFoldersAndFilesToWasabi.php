@@ -28,6 +28,7 @@ class SyncFoldersAndFilesToWasabi extends Command
         $this->info('All images have been successfully synced to Wasabi!');
     }
 
+
     function processUrl(string $url): string
     {
         // Step 1: Replace double slashes (//) with a single slash (/)
@@ -39,12 +40,12 @@ class SyncFoldersAndFilesToWasabi extends Command
 
         // Step 3: Check if the last part is numeric (e.g., '01', '02', etc.)
         if (preg_match('/^\d{2}$/', $lastPart)) {
-            // If it's numeric, modify the last part to include the date (e.g., '01' -> '01-01-2024')
-            $currentMonth = $lastPart;  // Use the folder name as the month
+            // If it's numeric, modify the last part to include the date (e.g., '01' -> '2024-01-01')
             $currentYear = date('Y');   // Get the current year (e.g., '2024')
+            $currentMonth = $lastPart;  // Use the folder name as the month
 
-            // Update the last part to be in the format '01-01-2024'
-            $newLastPart = $lastPart . '-' . $currentMonth . '-' . $currentYear;
+            // Update the last part to be in the format '2024-01-01'
+            $newLastPart = $currentYear . '-' . $currentMonth . '-01';
 
             // Step 4: Replace the last part with the new format
             $pathParts[count($pathParts) - 1] = $newLastPart;
@@ -55,7 +56,6 @@ class SyncFoldersAndFilesToWasabi extends Command
 
         return $url;
     }
-
     private function processFolder(string $url, string $currentPath)
     {
         $html = Http::get($url)->body();
