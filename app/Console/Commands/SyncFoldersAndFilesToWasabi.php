@@ -89,34 +89,39 @@ class SyncFoldersAndFilesToWasabi extends Command
                 ],
             ]);
 
-            // Perform a GET request to get the file content and headers
+            // Download the file content as a seekable stream (write to a temporary file)
             $response = Http::withOptions(['stream' => true])->get($fileUrl);
+            $fileContent = $response->getBody();
 
-            // Check if the 'Content-Length' header is present in the response
-            $contentLength = $response->header('Content-Length');
+            // Create a temporary file to hold the content and make it seekable
+            $tempFile = tmpfile();  // Create a temporary file
+            $filePath = stream_get_meta_data($tempFile)['uri']; // Get file URI
 
-            if (!$contentLength) {
-                throw new \Exception('Content-Length header is missing');
-            }
+            // Write the stream content to the temporary file
+            fwrite($tempFile, $fileContent);
 
-            // Stream the file to avoid memory issues with large files
-            $fileStream = $response->getBody();
+            // Rewind the file pointer to the beginning of the file (to ensure it's seekable)
+            rewind($tempFile);
 
-            // Calculate MD5 hash of the file content (not required to be seekable)
-            $md5 = base64_encode(md5($fileStream, true));
+            // Calculate the file's content length and MD5 checksum
+            $contentLength = filesize($filePath);  // Get the file size
+            $md5 = base64_encode(md5_file($filePath, true)); // Calculate MD5 checksum of the file content
 
-            // Upload the file to Wasabi using the S3 client, including the ContentMD5 header
+            // Upload the file to Wasabi using the seekable temporary file stream
             $result = $s3Client->putObject([
                 'Bucket' => env('AWS_BUCKET'),  // Your Wasabi bucket name
                 'Key'    => $path,  // The destination path in the Wasabi bucket
-                'Body'   => $fileStream,  // The file content as stream
+                'Body'   => fopen($filePath, 'rb'),  // Open the seekable temp file for upload
                 'ACL'    => 'public-read',  // Or 'private' depending on your use case
-                'ContentLength' => (int)$contentLength,  // Ensure it's an integer
-                'ContentMD5' => $md5,  // Add ContentMD5 header (base64-encoded MD5)
+                'ContentLength' => $contentLength,  // Content length
+                'ContentMD5' => $md5,  // MD5 hash for the file content
             ]);
 
             // Log the success
             $this->info("Uploaded to Wasabi: $path");
+
+            // Clean up the temporary file
+            fclose($tempFile);
 
         } catch (AwsException $e) {
             // Catch errors related to AWS SDK
