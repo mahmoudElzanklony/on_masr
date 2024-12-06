@@ -66,6 +66,8 @@ class SyncFoldersAndFilesToWasabi extends Command
             return $node->attr('href');
         });
 
+        dd($links);
+
         foreach ($links as $link) {
             if ($link === '../') {
                 continue; // Skip parent directory link
