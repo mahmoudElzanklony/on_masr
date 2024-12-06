@@ -2,6 +2,7 @@
 
 namespace App\Console\Commands;
 
+use Aws\Exception\AwsException;
 use Aws\S3\S3Client;
 use Illuminate\Console\Command;
 use Mockery\Exception;
@@ -79,30 +80,33 @@ class SyncFoldersAndFilesToWasabi extends Command
             // Initialize the S3Client with Wasabi configuration
             $s3Client = new S3Client([
                 'version' => 'latest',
-                'region' => env('AWS_DEFAULT_REGION'),  // Set your Wasabi region
-                'endpoint' => env('AWS_URL'),       // Set your Wasabi endpoint
+                'region'  => env('AWS_DEFAULT_REGION'),
+                'endpoint' => env('AWS_ENDPOINT'),
                 'credentials' => [
-                    'key' => env('AWS_ACCESS_KEY_ID'),  // Set your Wasabi access key
-                    'secret' => env('AWS_SECRET_ACCESS_KEY'),  // Set your Wasabi secret key
+                    'key'    => env('AWS_ACCESS_KEY_ID'),
+                    'secret' => env('AWS_SECRET_ACCESS_KEY'),
                 ],
             ]);
 
             // Stream the file to avoid memory issues with large files
-            $fileStream = Http::withOptions(['stream' => true])
-                ->get($fileUrl)->getBody();
+            $fileStream = Http::withOptions(['stream' => true])->get($fileUrl)->getBody();
+
+            // Get the file content length (size)
+            $contentLength = $fileStream->getSize();
 
             // Upload the file to Wasabi using the S3 client
             $result = $s3Client->putObject([
-                'Bucket' => env('AWS_BUCKET'),  // Set your Wasabi bucket name
-                'Key' => $path,  // The destination path in the Wasabi bucket
-                'Body' => $fileStream,  // The file content
-                'ACL' => 'public-read', // Or 'private' depending on your use case
+                'Bucket' => env('AWS_BUCKET_NAME'),  // Your Wasabi bucket name
+                'Key'    => $path,  // The destination path in the Wasabi bucket
+                'Body'   => $fileStream,  // The file content
+                'ACL'    => 'public-read',  // Or 'private' depending on your use case
+                'ContentLength' => $contentLength,  // Add the Content-Length header
             ]);
 
             // Log the success
             $this->info("Uploaded to Wasabi: $path");
 
-        } catch (Exception $e) {
+        } catch (AwsException $e) {
             // Catch errors related to AWS SDK
             $this->error("Failed to upload: $fileUrl. Error: {$e->getMessage()}");
         }
