@@ -2,7 +2,9 @@
 
 namespace App\Console\Commands;
 
+use Aws\S3\S3Client;
 use Illuminate\Console\Command;
+use Mockery\Exception;
 use Symfony\Component\DomCrawler\Crawler;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Storage;
@@ -69,28 +71,39 @@ class SyncFoldersAndFilesToWasabi extends Command
         return in_array($extension, $this->allowedExtensions);
     }
 
+
     private function uploadToWasabi(string $fileUrl, string $path)
     {
         try {
-            $path = str_replace('//', '/', $path); // Ensure the path is formatted correctly
+            $path = str_replace('//', '/', $path);
+            // Initialize the S3Client with Wasabi configuration
+            $s3Client = new S3Client([
+                'version' => 'latest',
+                'region' => env('AWS_DEFAULT_REGION'),  // Set your Wasabi region
+                'endpoint' => env('AWS_URL'),       // Set your Wasabi endpoint
+                'credentials' => [
+                    'key' => env('AWS_ACCESS_KEY_ID'),  // Set your Wasabi access key
+                    'secret' => env('AWS_SECRET_ACCESS_KEY'),  // Set your Wasabi secret key
+                ],
+            ]);
 
             // Stream the file to avoid memory issues with large files
-            $fileStream = Http::withOptions(['stream' => true])->get($fileUrl)->getBody();
+            $fileStream = Http::withOptions(['stream' => true])
+                ->get($fileUrl)->getBody();
 
-            // Generate a unique filename to prevent overwriting
-            $tempFilePath = storage_path('app/tempfile_' . uniqid() . '.tmp');
+            // Upload the file to Wasabi using the S3 client
+            $result = $s3Client->putObject([
+                'Bucket' => env('AWS_BUCKET'),  // Set your Wasabi bucket name
+                'Key' => $path,  // The destination path in the Wasabi bucket
+                'Body' => $fileStream,  // The file content
+                'ACL' => 'public-read', // Or 'private' depending on your use case
+            ]);
 
-            // Write the stream to a temporary file
-            file_put_contents($tempFilePath, $fileStream);
-
-            // Upload the file to Wasabi
-            Storage::disk('wasabi')->putFileAs('', new \Illuminate\Http\File($tempFilePath), $path);
-
-            // Delete the temporary file after upload
-            unlink($tempFilePath);
-
+            // Log the success
             $this->info("Uploaded to Wasabi: $path");
-        } catch (\Exception $e) {
+
+        } catch (Exception $e) {
+            // Catch errors related to AWS SDK
             $this->error("Failed to upload: $fileUrl. Error: {$e->getMessage()}");
         }
     }
