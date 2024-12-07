@@ -70,7 +70,8 @@ class SyncFoldersAndFilesToWasabi extends Command
         foreach ($links as $link) {
             if ($link === '../') {
                 continue; // Skip parent directory link
-            }else if($link == '01/' || $link == '02/' || $link == '03/'){
+            }else if($link == '01/' || $link == '02/' ||
+                $link == '03/' || $link == '04/'){
                 continue;
             }
 
