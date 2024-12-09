@@ -72,7 +72,8 @@ class SyncFoldersAndFilesToWasabi extends Command
                 continue; // Skip parent directory link
             }else if($link == '01/' || $link == '02/' ||
                 $link == '03/' || $link == '04/' || $link == '05/'
-                || $link == '06/' || $link == '07/' || $link == '08/'){
+                || $link == '06/' || $link == '07/'
+                || $link == '08/' ||  $link == '09/'){
                 continue;
             }
 
